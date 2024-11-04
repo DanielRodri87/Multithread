@@ -25,7 +25,6 @@ def update_client_list():
     for client in disconnected_clients:
         del clients[client]
 
-
 def handle_client(client_socket, client_address):
     client_socket.send("Escolha um nome de usuário: ".encode('utf-8'))
     client_name = client_socket.recv(1024).decode('utf-8')
@@ -49,9 +48,14 @@ def handle_client(client_socket, client_address):
             break
 
     print(f"[DESCONECTADO] {client_name} desconectado.")
-    del clients[client_socket]
+    
+    # Verifica se o cliente ainda está no dicionário antes de remover
+    if client_socket in clients:
+        del clients[client_socket]
+    
     client_socket.close()
     update_client_list()
+
 
 def send_private_message(sender_socket, target_name, message):
     sender_name = clients[sender_socket]
