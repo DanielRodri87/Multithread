@@ -6,25 +6,13 @@ SERVER_PORT = 12345
 MAX_CLIENTS = 3
 
 clients = {}
-client_threads = []  # Lista para armazenar as threads dos clientes
 server = None
 is_running = False
 
 def update_client_list():
     user_list = "Usuários online: " + ", ".join(clients.values())
-    disconnected_clients = []  # Lista para armazenar soquetes desconectados
-
     for client in clients:
-        try:
-            client.send(user_list.encode('utf-8'))
-        except OSError:
-            # Se o envio falhar, adiciona o cliente à lista de desconectados
-            disconnected_clients.append(client)
-
-    # Remove os clientes desconectados do dicionário de clientes
-    for client in disconnected_clients:
-        del clients[client]
-
+        client.send(user_list.encode('utf-8'))
 
 def handle_client(client_socket, client_address):
     client_socket.send("Escolha um nome de usuário: ".encode('utf-8'))
@@ -78,9 +66,8 @@ def start_server():
                 client_socket.close()
                 continue
 
-            client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
-            client_threads.append(client_thread)  # Adiciona a thread à lista
-            client_thread.start()
+            thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
+            thread.start()
         except:
             break
 
@@ -89,10 +76,7 @@ def stop_server():
     is_running = False
     for client_socket in list(clients.keys()):
         client_socket.close()
-    for thread in client_threads:
-        thread.join()  # Espera as threads dos clientes finalizarem
     clients.clear()
-    client_threads.clear()
     if server:
         server.close()
     print("[ENCERRADO] Servidor foi encerrado.")
